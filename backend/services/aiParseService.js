@@ -23,13 +23,27 @@ const MODEL = process.env.VERTEX_AI_MODEL || 'gemini-3-pro-preview';
 
 async function getAuthClient() {
   if (!authClient) {
-    const credentialsPath = process.env.GOOGLE_CREDENTIALS_PATH || path.join(__dirname, '../config/credentials.json');
-    
-    const auth = new google.auth.GoogleAuth({
-      keyFile: credentialsPath,
+    // Support for Render: Use GOOGLE_CREDENTIALS (JSON string) or GOOGLE_CREDENTIALS_PATH (file path)
+    let authOptions = {
       scopes: ['https://www.googleapis.com/auth/cloud-platform']
-    });
-
+    };
+    
+    if (process.env.GOOGLE_CREDENTIALS) {
+      // Render deployment: credentials as JSON string in environment variable
+      try {
+        const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+        authOptions.credentials = credentials;
+      } catch (error) {
+        logger.error('Failed to parse GOOGLE_CREDENTIALS:', error);
+        throw new Error('Invalid GOOGLE_CREDENTIALS format. Must be valid JSON string.');
+      }
+    } else {
+      // Local development: credentials from file path
+      const credentialsPath = process.env.GOOGLE_CREDENTIALS_PATH || path.join(__dirname, '../config/credentials.json');
+      authOptions.keyFile = credentialsPath;
+    }
+    
+    const auth = new google.auth.GoogleAuth(authOptions);
     authClient = await auth.getClient();
     logger.info('Vertex AI auth client initialized');
   }

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: spreadsheet-app
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # 以下の環境変数はRenderのダッシュボードで設定してください
+      # GOOGLE_PROJECT_ID
+      # GOOGLE_CREDENTIALS (JSON文字列として設定)
+      # GOOGLE_SHEETS_ID
+      # AI_PROVIDER
+      # VERTEX_AI_PROJECT_ID
+      # VERTEX_AI_LOCATION
+      # VERTEX_AI_MODEL
+

@@ -13,10 +13,25 @@ let visionClient = null;
 
 function getVisionClient() {
   if (!visionClient) {
-    const credentialsPath = process.env.GOOGLE_CREDENTIALS_PATH || path.join(__dirname, '../config/credentials.json');
-    visionClient = new vision.ImageAnnotatorClient({
-      keyFilename: credentialsPath
-    });
+    // Support for Render: Use GOOGLE_CREDENTIALS (JSON string) or GOOGLE_CREDENTIALS_PATH (file path)
+    let clientOptions = {};
+    
+    if (process.env.GOOGLE_CREDENTIALS) {
+      // Render deployment: credentials as JSON string in environment variable
+      try {
+        const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+        clientOptions = { credentials };
+      } catch (error) {
+        logger.error('Failed to parse GOOGLE_CREDENTIALS:', error);
+        throw new Error('Invalid GOOGLE_CREDENTIALS format. Must be valid JSON string.');
+      }
+    } else {
+      // Local development: credentials from file path
+      const credentialsPath = process.env.GOOGLE_CREDENTIALS_PATH || path.join(__dirname, '../config/credentials.json');
+      clientOptions = { keyFilename: credentialsPath };
+    }
+    
+    visionClient = new vision.ImageAnnotatorClient(clientOptions);
     logger.info('Vision API client initialized');
   }
   return visionClient;

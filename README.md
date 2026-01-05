@@ -119,6 +119,19 @@ http://localhost:3000
 
 - `api-spec.md`: API仕様書
 - `system-flow.md`: システムフロー図
+- `env-setup.md`: 環境変数設定ガイド
+- `render-deployment.md`: Renderデプロイ手順
+
+## 🚢 デプロイ
+
+### Renderへのデプロイ
+
+このアプリケーションはRenderにデプロイ可能です。詳細な手順は[`docs/render-deployment.md`](docs/render-deployment.md)を参照してください。
+
+**主なポイント：**
+- 認証情報は環境変数`GOOGLE_CREDENTIALS`（JSON文字列）として設定
+- ローカル開発では`GOOGLE_CREDENTIALS_PATH`（ファイルパス）を使用
+- `render.yaml`でデプロイ設定を定義
 
 ## 👥 ユーザー
 
