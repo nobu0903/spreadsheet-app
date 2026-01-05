@@ -11,7 +11,8 @@ const fs = require('fs');
 const logger = require('../utils/logger');
 
 let authClient = null;
-const PROJECT_ID = process.env.GOOGLE_PROJECT_ID || process.env.VERTEX_AI_PROJECT_ID;
+let credentialsData = null; // Store parsed credentials to extract project_id
+
 // Vertex AI StudioのGet codeでは "global" リージョンが使用されている
 // globalリージョンの場合、エンドポイントURLの形式が異なる
 const LOCATION = process.env.VERTEX_AI_LOCATION || 'global';
@@ -21,6 +22,34 @@ const LOCATION = process.env.VERTEX_AI_LOCATION || 'global';
 // 注意: バージョン番号（-001など）は付けない。エイリアスが最新バージョンに自動解決される
 // Vertex AI Studioと同じモデル名を使用することで、同じ動作が期待できる
 const MODEL = process.env.VERTEX_AI_MODEL || 'gemini-3-pro-preview';
+
+/**
+ * Get project ID from environment variables or credentials
+ */
+function getProjectId() {
+  // First, try environment variables
+  let projectId = process.env.GOOGLE_PROJECT_ID || process.env.VERTEX_AI_PROJECT_ID;
+  
+  // Validate that it's not a file path (common mistake)
+  if (projectId && (projectId.includes('/') || projectId.includes('\\') || projectId.endsWith('.json'))) {
+    logger.warn(`Invalid PROJECT_ID detected (looks like a file path): ${projectId}. Will try to extract from credentials.`);
+    projectId = null;
+  }
+  
+  // If not set, try to extract from credentials
+  if (!projectId && credentialsData) {
+    projectId = credentialsData.project_id;
+    if (projectId) {
+      logger.info(`Using project_id from credentials: ${projectId}`);
+    }
+  }
+  
+  if (!projectId) {
+    throw new Error('GOOGLE_PROJECT_ID or VERTEX_AI_PROJECT_ID environment variable is required, or project_id must be present in credentials JSON.');
+  }
+  
+  return projectId;
+}
 
 async function getAuthClient() {
   if (!authClient) {
@@ -32,8 +61,8 @@ async function getAuthClient() {
     if (process.env.GOOGLE_CREDENTIALS) {
       // Render deployment: credentials as JSON string in environment variable
       try {
-        const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-        authOptions.credentials = credentials;
+        credentialsData = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+        authOptions.credentials = credentialsData;
         logger.info('Using credentials from GOOGLE_CREDENTIALS environment variable');
       } catch (error) {
         logger.error('Failed to parse GOOGLE_CREDENTIALS:', error);
@@ -47,6 +76,14 @@ async function getAuthClient() {
       }
       authOptions.keyFile = credentialsPath;
       logger.info(`Using credentials from file: ${credentialsPath}`);
+      
+      // Try to read and parse credentials to extract project_id
+      try {
+        const credentialsContent = fs.readFileSync(credentialsPath, 'utf8');
+        credentialsData = JSON.parse(credentialsContent);
+      } catch (error) {
+        logger.warn('Could not parse credentials file to extract project_id:', error);
+      }
     } else {
       // Production environment should have GOOGLE_CREDENTIALS set
       if (process.env.NODE_ENV === 'production') {
@@ -59,6 +96,14 @@ async function getAuthClient() {
       }
       authOptions.keyFile = credentialsPath;
       logger.info(`Using credentials from default file: ${credentialsPath}`);
+      
+      // Try to read and parse credentials to extract project_id
+      try {
+        const credentialsContent = fs.readFileSync(credentialsPath, 'utf8');
+        credentialsData = JSON.parse(credentialsContent);
+      } catch (error) {
+        logger.warn('Could not parse credentials file to extract project_id:', error);
+      }
     }
     
     const auth = new google.auth.GoogleAuth(authOptions);
@@ -93,11 +138,16 @@ async function parseReceiptText(ocrText) {
       throw new Error('OCR text is empty');
     }
 
-    if (!PROJECT_ID) {
-      throw new Error('GOOGLE_PROJECT_ID or VERTEX_AI_PROJECT_ID environment variable is required');
-    }
-
+    // Initialize auth client first (this will populate credentialsData if using GOOGLE_CREDENTIALS)
     const auth = await getAuthClient();
+    
+    // Get project ID (will throw error if not available)
+    // This must be called after getAuthClient() so credentialsData is populated
+    const PROJECT_ID = getProjectId();
+    
+    if (!PROJECT_ID) {
+      throw new Error('GOOGLE_PROJECT_ID or VERTEX_AI_PROJECT_ID environment variable is required, or project_id must be present in credentials JSON.');
+    }
     
     logger.info('Starting AI parsing of OCR text');
 
