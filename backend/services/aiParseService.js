@@ -7,6 +7,7 @@
 
 const { google } = require('googleapis');
 const path = require('path');
+const fs = require('fs');
 const logger = require('../utils/logger');
 
 let authClient = null;
@@ -33,14 +34,31 @@ async function getAuthClient() {
       try {
         const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
         authOptions.credentials = credentials;
+        logger.info('Using credentials from GOOGLE_CREDENTIALS environment variable');
       } catch (error) {
         logger.error('Failed to parse GOOGLE_CREDENTIALS:', error);
         throw new Error('Invalid GOOGLE_CREDENTIALS format. Must be valid JSON string.');
       }
-    } else {
+    } else if (process.env.GOOGLE_CREDENTIALS_PATH) {
       // Local development: credentials from file path
-      const credentialsPath = process.env.GOOGLE_CREDENTIALS_PATH || path.join(__dirname, '../config/credentials.json');
+      const credentialsPath = process.env.GOOGLE_CREDENTIALS_PATH;
+      if (!fs.existsSync(credentialsPath)) {
+        throw new Error(`Credentials file not found at: ${credentialsPath}`);
+      }
       authOptions.keyFile = credentialsPath;
+      logger.info(`Using credentials from file: ${credentialsPath}`);
+    } else {
+      // Production environment should have GOOGLE_CREDENTIALS set
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('GOOGLE_CREDENTIALS environment variable is required in production. Please set it in Render dashboard.');
+      }
+      // Fallback for local development
+      const credentialsPath = path.join(__dirname, '../config/credentials.json');
+      if (!fs.existsSync(credentialsPath)) {
+        throw new Error(`Credentials file not found at: ${credentialsPath}. Please set GOOGLE_CREDENTIALS or GOOGLE_CREDENTIALS_PATH environment variable.`);
+      }
+      authOptions.keyFile = credentialsPath;
+      logger.info(`Using credentials from default file: ${credentialsPath}`);
     }
     
     const auth = new google.auth.GoogleAuth(authOptions);
