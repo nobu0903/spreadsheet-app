@@ -46,15 +46,17 @@ GOOGLE_SHEETS_ID=your-spreadsheet-id
 AI_PROVIDER=vertex-ai
 VERTEX_AI_PROJECT_ID=your-project-id
 VERTEX_AI_LOCATION=global
-VERTEX_AI_MODEL=gemini-3-pro-preview
+VERTEX_AI_MODEL=gemini-2.5-flash-exp
 ```
 
 - **AI_PROVIDER**: `vertex-ai` または `openai`（使用するAIプロバイダー）
 - **VERTEX_AI_PROJECT_ID**: Google CloudプロジェクトID（GOOGLE_PROJECT_IDと同じ値でOK）
 - **VERTEX_AI_LOCATION**: Vertex AIのリージョン（**推奨: `global`**。その他: `us-central1`, `asia-northeast1`など）
   - **注意**: Vertex AI Studioの「Get code」では`global`リージョンが使用される場合があります
-- **VERTEX_AI_MODEL**: 使用するモデル名（**エイリアスを使用**: `gemini-3-pro-preview`, `gemini-1.5-flash`, `gemini-1.5-pro`など。バージョン番号（-001など）は付けない）
-  - **注意**: Vertex AI Studioの「Get code」では`gemini-3-pro-preview`が使用される場合があります
+- **VERTEX_AI_MODEL**: 使用するモデル名（**デフォルト: `gemini-2.5-flash-exp`** - 高速で高精度）
+  - **推奨**: `gemini-2.5-flash-exp`（最速、構造化データ抽出に最適）
+  - **その他のオプション**: `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-2.0-flash-exp`, `gemini-3-pro-preview`
+  - **注意**: エイリアス名を使用してください。バージョン番号（-001など）は付けない
 
 #### オプションB: OpenAIを使用する場合
 
@@ -88,7 +90,7 @@ GOOGLE_SHEETS_ID=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
 AI_PROVIDER=vertex-ai
 VERTEX_AI_PROJECT_ID=my-receipt-app-123456
 VERTEX_AI_LOCATION=global
-VERTEX_AI_MODEL=gemini-3-pro-preview
+VERTEX_AI_MODEL=gemini-2.5-flash-exp
 ```
 
 ### OpenAIを使用する場合

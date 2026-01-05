@@ -17,11 +17,10 @@ let credentialsData = null; // Store parsed credentials to extract project_id
 // globalリージョンの場合、エンドポイントURLの形式が異なる
 const LOCATION = process.env.VERTEX_AI_LOCATION || 'global';
 // Vertex AIのGeminiモデル名
-// Vertex AI StudioのGet codeでは "gemini-3-pro-preview" が使用されている
-// エイリアス（推奨）: gemini-1.5-flash, gemini-1.5-pro, gemini-3-pro-preview
+// デフォルト: gemini-2.5-flash-exp (高速で高精度な構造化データ抽出に最適)
+// その他のオプション: gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp, gemini-3-pro-preview
 // 注意: バージョン番号（-001など）は付けない。エイリアスが最新バージョンに自動解決される
-// Vertex AI Studioと同じモデル名を使用することで、同じ動作が期待できる
-const MODEL = process.env.VERTEX_AI_MODEL || 'gemini-3-pro-preview';
+const MODEL = process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash-exp';
 
 /**
  * Get project ID from environment variables or credentials
@@ -151,27 +150,24 @@ async function parseReceiptText(ocrText) {
     
     logger.info('Starting AI parsing of OCR text');
 
-    const prompt = `以下のレシートのOCRテキストを解析して、構造化されたJSONデータに変換してください。
+    // Optimized prompt for faster processing
+    const prompt = `レシートOCRテキストをJSONに変換:
 
-OCRテキスト:
 ${ocrText}
 
-以下のJSON形式で返答してください。不明な項目は空文字列またはnullにしてください。数値は数値型で返してください。
-
+JSON形式（説明不要）:
 {
-  "date": "YYYY-MM-DD形式の日付",
+  "date": "YYYY-MM-DD",
   "storeName": "店舗名",
-  "payer": "支払者（従業員名）",
-  "amountExclTax": 税抜き金額（数値）,
-  "amountInclTax": 税込み金額（数値）,
-  "tax": 消費税額（数値）,
-  "paymentMethod": "支払方法（cash, card, otherのいずれか）",
-  "expenseCategory": "経費カテゴリ",
-  "projectName": "プロジェクト/クライアント名",
+  "payer": "支払者",
+  "amountExclTax": 数値,
+  "amountInclTax": 数値,
+  "tax": 数値,
+  "paymentMethod": "cash|card|other",
+  "expenseCategory": "カテゴリ",
+  "projectName": "プロジェクト名",
   "notes": "備考"
-}
-
-JSONのみを返答し、説明文は含めないでください。`;
+}`;
 
     // Call Vertex AI REST API for Gemini models
     // 公式ドキュメント: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
@@ -201,12 +197,12 @@ JSONのみを返答し、説明文は含めないでください。`;
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        temperature: 0.1,
-        topP: 0.95,
-        // gemini-3-pro-previewは思考過程（thoughts）を使用するため、より多くのトークンが必要
-        // Vertex AI StudioのGet codeでは maxOutputTokens: 65535 が使用されている
-        // ログで思考プロセスに2045トークン使用されているのを確認したため、十分な余裕を持たせる
-        maxOutputTokens: 16384
+        temperature: 0.0,  // Lower temperature for faster, more deterministic responses
+        topP: 0.8,          // Slightly lower for faster sampling
+        topK: 20,           // Limit candidate tokens for faster processing
+        // Receipt JSON is small (~200-500 tokens), 1024 is more than enough
+        // Reduced from 16384 to significantly improve response time
+        maxOutputTokens: 1024
       }
     };
 

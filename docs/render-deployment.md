@@ -39,7 +39,7 @@ GOOGLE_SHEETS_ID=your-spreadsheet-id
 AI_PROVIDER=vertex-ai
 VERTEX_AI_PROJECT_ID=your-project-id
 VERTEX_AI_LOCATION=global
-VERTEX_AI_MODEL=gemini-3-pro-preview
+VERTEX_AI_MODEL=gemini-2.5-flash-exp
 ```
 
 #### 認証情報の設定（重要・必須）
