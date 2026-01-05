@@ -1,0 +1,34 @@
+{
+  "name": "receipt-processing-app",
+  "version": "1.0.0",
+  "description": "Corporate internal web application for processing receipts and writing structured data into Google Sheets",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "keywords": [
+    "receipt",
+    "ocr",
+    "google-sheets",
+    "vision-api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/aiplatform": "^5.14.0",
+    "@google-cloud/vision": "^5.3.4",
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "googleapis": "^167.0.0",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

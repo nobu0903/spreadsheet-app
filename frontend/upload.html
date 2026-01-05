@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レシートアップロード - Receipt Processing App</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>レシートアップロード</h1>
+      <nav>
+        <a href="upload.html">アップロード</a> |
+        <a href="history.html">履歴</a>
+      </nav>
+    </div>
+
+    <div class="card">
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="receiptFile">レシート画像を選択</label>
+          <input type="file" id="receiptFile" name="receiptFile" accept="image/jpeg,image/png" required>
+        </div>
+
+        <div id="previewContainer" style="margin: 20px 0;">
+          <img id="imagePreview" style="max-width: 100%; display: none; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <button type="submit" id="uploadBtn" class="btn btn-primary">アップロードしてOCR実行</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/upload.js"></script>
+</body>
+</html>
+
+
