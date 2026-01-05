@@ -42,7 +42,9 @@ VERTEX_AI_LOCATION=global
 VERTEX_AI_MODEL=gemini-3-pro-preview
 ```
 
-#### 認証情報の設定（重要）
+#### 認証情報の設定（重要・必須）
+
+**⚠️ 重要**: `GOOGLE_CREDENTIALS`環境変数は**必須**です。設定しないとアプリケーションが起動しません。
 
 `GOOGLE_CREDENTIALS`環境変数には、サービスアカウントのJSONファイルの内容を**JSON文字列として**設定します。
 
@@ -53,6 +55,11 @@ VERTEX_AI_MODEL=gemini-3-pro-preview
 3. Renderの環境変数設定画面で：
    - **Key**: `GOOGLE_CREDENTIALS`
    - **Value**: コピーしたJSON文字列をそのまま貼り付け
+
+**注意**: 
+- JSON文字列をそのまま貼り付けるため、改行文字（`\n`）が含まれていても問題ありません
+- 環境変数の値は複数行に対応しています
+- 設定後、再デプロイが必要です
 
 **例：**
 ```json
