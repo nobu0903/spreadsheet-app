@@ -204,9 +204,10 @@ ${ocrText}
         temperature: 0.0,  // Lower temperature for faster, more deterministic responses
         topP: 0.8,          // Slightly lower for faster sampling
         topK: 20,           // Limit candidate tokens for faster processing
-        // Receipt JSON is small (~200-500 tokens), 1024 is more than enough
-        // Reduced from 16384 to significantly improve response time
-        maxOutputTokens: 1024
+        // Gemini 2.5 Flash uses additional tokens for "thoughts".
+        // 1024 was too low (finishReason: MAX_TOKENS, JSON cut in the middle).
+        // 4096 gives enough room for thoughts + JSON while keeping latency reasonable.
+        maxOutputTokens: 4096
       }
     };
 
