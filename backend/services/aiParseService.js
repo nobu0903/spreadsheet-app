@@ -284,6 +284,8 @@ ${ocrText}
     }
     
     const responseText = part.text || '';
+    logger.info('Raw AI response text (first 500 chars):');
+    logger.info(responseText.slice(0, 500));
 
     // Extract JSON from response (handle cases where response might have markdown code blocks)
     let jsonText = responseText.trim();
@@ -301,6 +303,9 @@ ${ocrText}
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       jsonText = jsonText.slice(firstBrace, lastBrace + 1).trim();
     }
+
+    logger.info('AI JSON candidate text (first 500 chars):');
+    logger.info(jsonText.slice(0, 500));
 
     // Parse JSON
     let structuredData;
