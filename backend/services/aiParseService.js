@@ -151,19 +151,23 @@ async function parseReceiptText(ocrText) {
     logger.info('Starting AI parsing of OCR text');
 
     // Optimized prompt for faster processing
-    const prompt = `レシートOCRテキストをJSONに変換:
+    const prompt = `レシートのOCRテキストを、次のJSON形式に「厳密に」変換してください。
+出力は必ず有効なJSONだけとし、日本語の説明文やコメント、コードブロック（\`\`\`）は一切含めないでください。
+文字列は必ずダブルクォーテーションで囲み、改行は必要な場合のみ "\\n" としてエスケープしてください。
+数値フィールドには数値型のみを使用し、文字列は入れないでください。
 
+OCRテキスト:
 ${ocrText}
 
-JSON形式（説明不要）:
+出力フォーマット（サンプルの構造のみ。実際の値に置き換えてください）:
 {
   "date": "YYYY-MM-DD",
   "storeName": "店舗名",
   "payer": "支払者",
-  "amountExclTax": 数値,
-  "amountInclTax": 数値,
-  "tax": 数値,
-  "paymentMethod": "cash|card|other",
+  "amountExclTax": 1234.56,
+  "amountInclTax": 1234.56,
+  "tax": 123.45,
+  "paymentMethod": "cash",
   "expenseCategory": "カテゴリ",
   "projectName": "プロジェクト名",
   "notes": "備考"
@@ -289,6 +293,13 @@ JSON形式（説明不要）:
       jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
     } else if (jsonText.startsWith('```')) {
       jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    // Try to isolate the JSON object by taking the substring between the first '{' and the last '}'
+    const firstBrace = jsonText.indexOf('{');
+    const lastBrace = jsonText.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      jsonText = jsonText.slice(firstBrace, lastBrace + 1).trim();
     }
 
     // Parse JSON
