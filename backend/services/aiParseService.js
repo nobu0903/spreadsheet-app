@@ -203,11 +203,7 @@ JSON形式（説明不要）:
         // Receipt JSON is small (~200-500 tokens), 1024 is more than enough
         // Reduced from 16384 to significantly improve response time
         maxOutputTokens: 1024
-      },
-      // Ask Gemini to return strict JSON
-      // Supported by Gemini 1.5 / 2.x models:
-      // https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-0-flash
-      responseMimeType: 'application/json'
+      }
     };
 
     let response;
