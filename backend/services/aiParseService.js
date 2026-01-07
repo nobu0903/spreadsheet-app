@@ -167,10 +167,7 @@ ${ocrText}
   "amountExclTax": 1234.56,
   "amountInclTax": 1234.56,
   "tax": 123.45,
-  "paymentMethod": "cash",
-  "expenseCategory": "カテゴリ",
-  "projectName": "プロジェクト名",
-  "notes": "備考"
+  "paymentMethod": "cash",  
 }`;
 
     // Call Vertex AI REST API for Gemini models
