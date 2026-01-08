@@ -20,11 +20,35 @@
       <form id="uploadForm">
         <div class="form-group">
           <label for="receiptFile">レシート画像を選択</label>
-          <input type="file" id="receiptFile" name="receiptFile" accept="image/jpeg,image/png" required>
+          <input type="file" id="receiptFile" name="receiptFile" accept="image/jpeg,image/png" multiple>
+          <small style="display: block; margin-top: 5px; color: #666; font-size: 12px;">
+            Ctrl/Cmdキーを押しながらクリックで複数選択可能
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>処理モード</label>
+          <div style="margin-top: 5px;">
+            <label style="margin-right: 15px;">
+              <input type="radio" name="mode" value="single" checked> 1枚ずつ処理
+            </label>
+            <label>
+              <input type="radio" name="mode" value="batch"> 複数枚一括処理
+            </label>
+          </div>
         </div>
 
         <div id="previewContainer" style="margin: 20px 0;">
           <img id="imagePreview" style="max-width: 100%; display: none; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+
+        <!-- バッチ処理時の進行状況表示 -->
+        <div id="batchProgress" style="display: none; margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 4px;">
+          <h3 style="margin-bottom: 10px;">処理中: <span id="progressText">0/0</span></h3>
+          <div style="width: 100%; height: 20px; background: #ddd; border-radius: 4px; overflow: hidden;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: #4285f4; transition: width 0.3s;"></div>
+          </div>
+          <div id="processingList" style="margin-top: 15px; font-size: 12px;"></div>
         </div>
 
         <button type="submit" id="uploadBtn" class="btn btn-primary">アップロードしてOCR実行</button>

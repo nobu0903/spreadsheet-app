@@ -22,18 +22,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleFileSelect(e) {
-    const file = e.target.files[0];
-    if (file && preview) {
+    const files = Array.from(e.target.files || []);
+    const mode = document.querySelector('input[name="mode"]:checked')?.value || 'single';
+    
+    if (files.length === 0) {
+      if (preview) {
+        preview.style.display = 'none';
+      }
+      return;
+    }
+    
+    // 単一モードの場合は最初の1枚のみプレビュー
+    if (mode === 'single' && files[0] && preview) {
       const reader = new FileReader();
       reader.onload = (e) => {
         preview.src = e.target.result;
         preview.style.display = 'block';
       };
-      reader.readAsDataURL(file);
-      
-      // Clear any previous error messages
-      clearError();
+      reader.readAsDataURL(files[0]);
+    } else if (mode === 'batch' && preview) {
+      // バッチモードの場合はプレビューを非表示
+      preview.style.display = 'none';
     }
+    
+    // Clear any previous error messages
+    clearError();
   }
 
   function showError(message) {
@@ -71,18 +84,31 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     clearError();
 
-    const file = fileInput?.files[0];
-    if (!file) {
+    const files = Array.from(fileInput?.files || []);
+    if (files.length === 0) {
       showError('画像ファイルを選択してください');
       return;
     }
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      showError('画像ファイル（JPEG/PNG）を選択してください');
+    // Validate file types
+    const invalidFiles = files.filter(file => !file.type.startsWith('image/'));
+    if (invalidFiles.length > 0) {
+      showError('画像ファイル（JPEG/PNG）のみ選択してください');
       return;
     }
 
+    const mode = document.querySelector('input[name="mode"]:checked')?.value || 'single';
+
+    // 単一モードの場合
+    if (mode === 'single') {
+      await handleSingleUpload(files[0]);
+    } else {
+      // バッチモードの場合
+      await handleBatchUpload(files);
+    }
+  }
+
+  async function handleSingleUpload(file) {
     setLoading(true);
 
     try {
@@ -105,6 +131,103 @@ document.addEventListener('DOMContentLoaded', () => {
       const errorMessage = error.message || '処理中にエラーが発生しました';
       showError(errorMessage);
       setLoading(false);
+    }
+  }
+
+  async function handleBatchUpload(files) {
+    setLoading(true);
+    
+    // 進行状況表示を表示
+    const batchProgress = document.getElementById('batchProgress');
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+    const processingList = document.getElementById('processingList');
+    
+    if (batchProgress) {
+      batchProgress.style.display = 'block';
+    }
+
+    const results = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const currentIndex = i + 1;
+        const total = files.length;
+        
+        // 進行状況を更新
+        if (progressText) {
+          progressText.textContent = `${currentIndex}/${total}`;
+        }
+        if (progressBar) {
+          progressBar.style.width = `${(currentIndex / total) * 100}%`;
+        }
+        if (processingList) {
+          processingList.innerHTML = `<div>処理中: ${file.name}</div>`;
+        }
+
+        try {
+          // Step 1: OCR処理
+          const ocrResult = await performOCR(file);
+          
+          if (!ocrResult.text || ocrResult.text.trim().length === 0) {
+            throw new Error('OCRでテキストを抽出できませんでした');
+          }
+
+          // Step 2: AI構造化
+          const structuredData = await structureOCRText(ocrResult.text);
+
+          results.push({
+            fileName: file.name,
+            success: true,
+            data: structuredData
+          });
+
+          if (processingList) {
+            processingList.innerHTML = `<div style="color: green;">✓ ${file.name} - 完了</div>`;
+          }
+        } catch (error) {
+          console.error(`Error processing ${file.name}:`, error);
+          results.push({
+            fileName: file.name,
+            success: false,
+            error: error.message || '処理に失敗しました'
+          });
+
+          if (processingList) {
+            processingList.innerHTML += `<div style="color: red;">✗ ${file.name} - エラー: ${error.message || '処理失敗'}</div>`;
+          }
+        }
+      }
+
+      // 全処理完了
+      if (progressBar) {
+        progressBar.style.width = '100%';
+      }
+
+      // 成功したレシートのみを確認画面に渡す
+      const successfulResults = results.filter(r => r.success);
+      
+      if (successfulResults.length === 0) {
+        showError('すべてのレシートの処理に失敗しました');
+        setLoading(false);
+        if (batchProgress) {
+          batchProgress.style.display = 'none';
+        }
+        return;
+      }
+
+      // 一覧確認画面に遷移
+      localStorage.setItem('batchReceiptData', JSON.stringify(successfulResults));
+      window.location.href = 'batch-review.html';
+
+    } catch (error) {
+      console.error('Batch upload error:', error);
+      showError(error.message || '一括処理中にエラーが発生しました');
+      setLoading(false);
+      if (batchProgress) {
+        batchProgress.style.display = 'none';
+      }
     }
   }
 

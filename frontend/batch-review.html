@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一括確認 - Receipt Processing App</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>一括確認・編集</h1>
+      <nav>
+        <a href="upload.html">アップロード</a> |
+        <a href="history.html">履歴</a>
+      </nav>
+    </div>
+
+    <div class="card">
+      <div style="margin-bottom: 20px;">
+        <label for="spreadsheetId">スプレッドシートID（オプション）</label>
+        <input type="text" id="spreadsheetId" name="spreadsheetId" 
+               placeholder="デフォルトのスプレッドシートを使用する場合は空欄" 
+               style="width: 100%; padding: 8px; margin-top: 5px;">
+        <small style="display: block; margin-top: 5px; color: #666; font-size: 12px;">
+          GoogleスプレッドシートのURLから取得: https://docs.google.com/spreadsheets/d/【ID】/edit
+        </small>
+      </div>
+
+      <div id="receiptsList"></div>
+
+      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <button type="button" id="saveAllBtn" class="btn btn-primary">すべて保存</button>
+        <button type="button" id="cancelBtn" class="btn btn-secondary" style="margin-left: 10px;">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/batch-review.js"></script>
+</body>
+</html>
+
