@@ -131,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       // Collect form data
+      const spreadsheetId = document.getElementById('spreadsheetId')?.value?.trim();
       const formData = {
         date: document.getElementById('date')?.value,
         storeName: document.getElementById('storeName')?.value,
@@ -144,6 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
         notes: document.getElementById('notes')?.value || null,
         receiptImageUrl: document.getElementById('receiptImageUrl')?.value || null
       };
+
+      // Add spreadsheetId if provided (empty string will be ignored by backend)
+      if (spreadsheetId) {
+        formData.spreadsheetId = spreadsheetId;
+      }
 
       // Submit to Google Sheets
       const response = await fetch(`${API_BASE_URL}/sheets/write`, {

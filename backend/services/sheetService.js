@@ -90,14 +90,20 @@ function getSheetNameFromDate(dateString) {
 /**
  * Ensure sheet exists, create if it doesn't
  * @param {string} sheetName - Name of the sheet
+ * @param {string|null} spreadsheetId - Optional spreadsheet ID (falls back to environment variable)
  */
-async function ensureSheetExists(sheetName) {
+async function ensureSheetExists(sheetName, spreadsheetId = null) {
   const sheets = await getSheetsClient();
+  const targetSpreadsheetId = spreadsheetId || SPREADSHEET_ID;
+  
+  if (!targetSpreadsheetId) {
+    throw new Error('Spreadsheet ID is required for ensureSheetExists');
+  }
   
   try {
     // Get spreadsheet metadata
     const spreadsheet = await sheets.spreadsheets.get({
-      spreadsheetId: SPREADSHEET_ID
+      spreadsheetId: targetSpreadsheetId
     });
 
     const existingSheets = spreadsheet.data.sheets || [];
@@ -108,7 +114,7 @@ async function ensureSheetExists(sheetName) {
       
       // Create new sheet
       await sheets.spreadsheets.batchUpdate({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: targetSpreadsheetId,
         resource: {
           requests: [{
             addSheet: {
@@ -136,7 +142,7 @@ async function ensureSheetExists(sheetName) {
       ];
 
       await sheets.spreadsheets.values.update({
-        spreadsheetId: SPREADSHEET_ID,
+        spreadsheetId: targetSpreadsheetId,
         range: `${sheetName}!A1:K1`,
         valueInputOption: 'RAW',
         resource: {
@@ -155,19 +161,23 @@ async function ensureSheetExists(sheetName) {
 /**
  * Write receipt data to Google Sheets
  * @param {Object} receiptData - Structured receipt data
+ * @param {string|null} spreadsheetId - Optional spreadsheet ID (falls back to environment variable)
  * @returns {Promise<Object>} Write confirmation
  */
-async function writeReceipt(receiptData) {
+async function writeReceipt(receiptData, spreadsheetId = null) {
   try {
-    if (!SPREADSHEET_ID) {
-      throw new Error('GOOGLE_SHEETS_ID environment variable is not set');
+    // Use provided spreadsheetId or fall back to environment variable
+    const targetSpreadsheetId = spreadsheetId || SPREADSHEET_ID;
+    
+    if (!targetSpreadsheetId) {
+      throw new Error('Spreadsheet ID is required. Please provide it in the request or set GOOGLE_SHEETS_ID environment variable.');
     }
 
     const sheets = await getSheetsClient();
     const sheetName = getSheetNameFromDate(receiptData.date);
     
-    // Ensure sheet exists
-    await ensureSheetExists(sheetName);
+    // Ensure sheet exists (pass spreadsheetId to ensureSheetExists)
+    await ensureSheetExists(sheetName, targetSpreadsheetId);
 
     // Prepare row data in the correct order
     const rowData = [
@@ -186,7 +196,7 @@ async function writeReceipt(receiptData) {
 
     // Append row to sheet
     const response = await sheets.spreadsheets.values.append({
-      spreadsheetId: SPREADSHEET_ID,
+      spreadsheetId: targetSpreadsheetId,
       range: `${sheetName}!A:K`,
       valueInputOption: 'RAW',
       insertDataOption: 'INSERT_ROWS',

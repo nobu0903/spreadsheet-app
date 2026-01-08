@@ -41,8 +41,14 @@ async function writeToSheet(req, res) {
       });
     }
 
+    // Extract spreadsheetId from request (optional, falls back to environment variable)
+    const spreadsheetId = receiptData.spreadsheetId?.trim() || null;
+    
+    // Remove spreadsheetId from receiptData before passing to service
+    const { spreadsheetId: _, ...receiptDataWithoutId } = receiptData;
+
     // Call sheet service to write receipt
-    const result = await sheetService.writeReceipt(receiptData);
+    const result = await sheetService.writeReceipt(receiptDataWithoutId, spreadsheetId);
 
     logger.info(`Receipt written successfully to sheet ${result.sheetName}, row ${result.rowNumber}`);
 
