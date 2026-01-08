@@ -13,9 +13,10 @@ const logger = require('../utils/logger');
 let authClient = null;
 let credentialsData = null; // Store parsed credentials to extract project_id
 
-// Vertex AI StudioのGet codeでは "global" リージョンが使用されている
-// globalリージョンの場合、エンドポイントURLの形式が異なる
-const LOCATION = process.env.VERTEX_AI_LOCATION || 'global';
+// リージョンの最適化: globalではなく最寄りのリージョンを使用（レイテンシ削減）
+// Renderは通常us-east-1またはus-west-1にデプロイされるため、us-central1が最適
+// 日本からのアクセスの場合は asia-northeast1 も選択肢
+const LOCATION = process.env.VERTEX_AI_LOCATION || 'us-central1';
 // Vertex AIのGeminiモデル名
 // デフォルト: gemini-2.5-flash-exp (高速で高精度な構造化データ抽出に最適)
 // その他のオプション: gemini-1.5-flash, gemini-1.5-pro, gemini-2.0-flash-exp, gemini-3-pro-preview
@@ -48,6 +49,19 @@ function getProjectId() {
   }
   
   return projectId;
+}
+
+/**
+ * Pre-initialize auth client for faster first request
+ * Call this at server startup to reduce latency
+ */
+async function initializeAuth() {
+  try {
+    await getAuthClient();
+    logger.info('Auth client pre-initialized successfully');
+  } catch (error) {
+    logger.warn('Auth pre-initialization failed (will initialize on first request):', error.message);
+  }
 }
 
 async function getAuthClient() {
@@ -150,25 +164,38 @@ async function parseReceiptText(ocrText) {
     
     logger.info('Starting AI parsing of OCR text');
 
-    // Optimized prompt for faster processing
-    const prompt = `レシートのOCRテキストを、次のJSON形式に「厳密に」変換してください。
-出力は必ず有効なJSONだけとし、日本語の説明文やコメント、コードブロック（\`\`\`）は一切含めないでください。
-文字列は必ずダブルクォーテーションで囲み、改行は必要な場合のみ "\\n" としてエスケープしてください。
-数値フィールドには数値型のみを使用し、文字列は入れないでください。
+    // OCRテキストの前処理：不要な改行・空白を削除してトークン数を削減
+    let cleanedOcrText = ocrText
+      .replace(/\n{3,}/g, '\n\n')      // 3つ以上の連続改行を2つに
+      .replace(/[ \t]+/g, ' ')          // 連続する空白・タブを1つに
+      .replace(/\s*[\|｜]\s*/g, '|')    // パイプ文字前後の空白を削除
+      .replace(/^\s+|\s+$/gm, '')       // 各行の前後の空白を削除
+      .trim();
+    
+    // 長すぎる場合は最初の2000文字に制限（レシートは通常500文字以内）
+    if (cleanedOcrText.length > 2000) {
+      logger.warn(`OCR text is very long (${cleanedOcrText.length} chars), truncating to 2000`);
+      cleanedOcrText = cleanedOcrText.substring(0, 2000);
+    }
+    
+    logger.info(`OCR text cleaned: ${ocrText.length} → ${cleanedOcrText.length} chars`);
 
-OCRテキスト:
-${ocrText}
+    // 最適化されたプロンプト：Few-shot example + 思考プロセス抑制
+    const prompt = `【重要】思考プロセス不要、JSONのみ出力。
 
-出力フォーマット（サンプルの構造のみ。実際の値に置き換えてください）:
-{
-  "date": "YYYY-MM-DD",
-  "storeName": "店舗名",
-  "payer": "支払者",
-  "amountExclTax": 1234.56,
-  "amountInclTax": 1234.56,
-  "tax": 123.45,
-  "paymentMethod": "cash",  
-}`;
+レシートOCR→JSON変換:
+
+【例1】
+OCR: 2024/01/15 コンビニ 山田太郎 1000円 1100円 100円 現金
+JSON: {"date":"2024-01-15","storeName":"コンビニ","payer":"山田太郎","amountExclTax":1000,"amountInclTax":1100,"tax":100,"paymentMethod":"cash","expenseCategory":"","projectName":"","notes":""}
+
+【例2】
+OCR: 2024-01-20 スーパーマーケット 佐藤花子 5000円 5500円 カード
+JSON: {"date":"2024-01-20","storeName":"スーパーマーケット","payer":"佐藤花子","amountExclTax":5000,"amountInclTax":5500,"tax":500,"paymentMethod":"card","expenseCategory":"","projectName":"","notes":""}
+
+【変換対象】
+OCR: ${cleanedOcrText}
+JSON:`;
 
     // Call Vertex AI REST API for Gemini models
     // 公式ドキュメント: https://cloud.google.com/vertex-ai/generative-ai/docs/learn/model-versions
@@ -201,10 +228,9 @@ ${ocrText}
         temperature: 0.0,  // Lower temperature for faster, more deterministic responses
         topP: 0.8,          // Slightly lower for faster sampling
         topK: 20,           // Limit candidate tokens for faster processing
-        // Gemini 2.5 Flash uses additional tokens for "thoughts".
-        // 1024 was too low (finishReason: MAX_TOKENS, JSON cut in the middle).
-        // 4096 gives enough room for thoughts + JSON while keeping latency reasonable.
-        maxOutputTokens: 4096
+        // 思考プロセス抑制 + Few-shot exampleにより、思考トークンが削減される
+        // JSONは200-500トークン程度なので、2048で十分（4096から削減して高速化）
+        maxOutputTokens: 2048
       }
     };
 
@@ -348,7 +374,8 @@ ${ocrText}
 }
 
 module.exports = {
-  parseReceiptText
+  parseReceiptText,
+  initializeAuth
 };
 
 

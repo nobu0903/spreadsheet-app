@@ -51,8 +51,9 @@ VERTEX_AI_MODEL=gemini-2.5-flash-exp
 
 - **AI_PROVIDER**: `vertex-ai` または `openai`（使用するAIプロバイダー）
 - **VERTEX_AI_PROJECT_ID**: Google CloudプロジェクトID（GOOGLE_PROJECT_IDと同じ値でOK）
-- **VERTEX_AI_LOCATION**: Vertex AIのリージョン（**推奨: `global`**。その他: `us-central1`, `asia-northeast1`など）
-  - **注意**: Vertex AI Studioの「Get code」では`global`リージョンが使用される場合があります
+- **VERTEX_AI_LOCATION**: Vertex AIのリージョン（**デフォルト: `us-central1`** - レイテンシ最適化済み）
+  - **推奨**: `us-central1`（Renderデプロイ時）、`asia-northeast1`（日本からのアクセス）
+  - その他: `global`, `us-east1`, `europe-west1`など
 - **VERTEX_AI_MODEL**: 使用するモデル名（**デフォルト: `gemini-2.5-flash-exp`** - 高速で高精度）
   - **推奨**: `gemini-2.5-flash-exp`（最速、構造化データ抽出に最適）
   - **その他のオプション**: `gemini-1.5-flash`, `gemini-1.5-pro`, `gemini-2.0-flash-exp`, `gemini-3-pro-preview`
