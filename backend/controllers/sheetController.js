@@ -9,6 +9,39 @@ const errorHandler = require('../utils/errorHandler');
 const logger = require('../utils/logger');
 
 /**
+ * Utility: process items with a concurrency limit
+ * @param {Array<any>} items
+ * @param {number} concurrencyLimit
+ * @param {(item: any) => Promise<void>} processor
+ */
+async function processWithConcurrencyLimit(items, concurrencyLimit, processor) {
+  const executing = [];
+
+  for (const item of items) {
+    const p = Promise.resolve().then(() => processor(item));
+    executing.push(p);
+
+    if (executing.length >= concurrencyLimit) {
+      await Promise.race(executing);
+      // remove settled promises
+      for (let i = executing.length - 1; i >= 0; i--) {
+        if (executing[i].settled) continue;
+      }
+    }
+
+    // attach settled flag
+    p.finally(() => {
+      const idx = executing.indexOf(p);
+      if (idx !== -1) {
+        executing.splice(idx, 1);
+      }
+    });
+  }
+
+  await Promise.allSettled(executing);
+}
+
+/**
  * Write receipt data to Google Sheets
  * POST /api/sheets/write
  */
@@ -113,43 +146,76 @@ async function batchWrite(req, res) {
       });
     }
 
-    // Write receipts sequentially
-    const results = [];
+    // Group receipts by target sheet (month)
+    const { getSheetNameFromDate } = sheetService;
+    const receiptsBySheet = {};
+    receipts.forEach((receipt, index) => {
+      const sheetName = getSheetNameFromDate(receipt.date);
+      if (!receiptsBySheet[sheetName]) {
+        receiptsBySheet[sheetName] = [];
+      }
+      receiptsBySheet[sheetName].push({ receipt, index });
+    });
+
+    const sheetNames = Object.keys(receiptsBySheet);
+
+    // Ensure all required sheets exist (with concurrency limit)
+    const maxConcurrency = parseInt(process.env.SHEETS_MAX_CONCURRENCY || '5', 10);
+
+    await processWithConcurrencyLimit(sheetNames, maxConcurrency, async (sheetName) => {
+      await sheetService.ensureSheetExists(sheetName, spreadsheetId);
+    });
+
+    // Batch write per sheet (with concurrency limit)
+    const results = new Array(receipts.length);
     let successCount = 0;
     let failureCount = 0;
 
-    for (let i = 0; i < receipts.length; i++) {
-      const receipt = receipts[i];
+    const sheetEntries = Object.entries(receiptsBySheet);
+
+    await processWithConcurrencyLimit(sheetEntries, maxConcurrency, async ([sheetName, group]) => {
       try {
-        const result = await sheetService.writeReceipt(receipt, spreadsheetId);
-        results.push({
-          index: i,
-          success: true,
-          sheetName: result.sheetName,
-          rowNumber: result.rowNumber
+        const writeResults = await sheetService.batchWriteToSheet(
+          sheetName,
+          group.map((g) => g.receipt),
+          spreadsheetId
+        );
+
+        writeResults.forEach((resItem, idx) => {
+          const originalIndex = group[idx].index;
+          results[originalIndex] = {
+            index: originalIndex,
+            success: resItem.success,
+            sheetName,
+            rowNumber: resItem.rowNumber
+          };
+          if (resItem.success) {
+            successCount++;
+          } else {
+            failureCount++;
+          }
         });
-        successCount++;
-        logger.info(`Batch write ${i + 1}/${receipts.length}: Success`);
-      } catch (writeError) {
-        const errorMessage = writeError.message || 'Unknown error';
-        results.push({
-          index: i,
-          success: false,
-          error: errorMessage
+      } catch (err) {
+        logger.error(`Batch write for sheet ${sheetName} failed:`, err);
+        group.forEach(({ index }) => {
+          results[index] = {
+            index,
+            success: false,
+            error: err.message || 'Unknown error'
+          };
+          failureCount++;
         });
-        failureCount++;
-        logger.error(`Batch write ${i + 1}/${receipts.length}: Failed - ${errorMessage}`);
       }
-    }
+    });
 
     logger.info(`Batch write completed: ${successCount} successful, ${failureCount} failed`);
 
     res.status(200).json({
       success: true,
-      successCount: successCount,
-      failureCount: failureCount,
+      successCount,
+      failureCount,
       total: receipts.length,
-      results: results
+      results
     });
   } catch (error) {
     logger.error('Error in batch write:', error);
