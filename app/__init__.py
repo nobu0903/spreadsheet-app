@@ -1,0 +1,1 @@
+# Python/FastAPI版レシートOCRアプリ
