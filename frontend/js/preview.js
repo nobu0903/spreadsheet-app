@@ -4,7 +4,10 @@
  * Connects to: backend/routes/aiRoutes.js, backend/routes/sheetRoutes.js
  */
 
-const API_BASE_URL = '/api';
+// FastAPIサーバー（ポート8000）を使用
+const API_BASE_URL = 'http://localhost:8000/api';
+// Node.jsサーバー（ポート3000）を使用する場合は以下を使用
+// const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Load and populate form data from localStorage

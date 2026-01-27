@@ -3,7 +3,10 @@
  * Handles batch review and saving of multiple receipts
  */
 
-const API_BASE_URL = '/api';
+// FastAPIサーバー（ポート8000）を使用
+const API_BASE_URL = 'http://localhost:8000/api';
+// Node.jsサーバー（ポート3000）を使用する場合は以下を使用
+// const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
   const receiptsList = document.getElementById('receiptsList');

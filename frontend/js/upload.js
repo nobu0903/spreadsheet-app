@@ -1,10 +1,13 @@
 /**
  * upload.js
  * Handles receipt image upload functionality
- * Connects to: backend/routes/ocrRoutes.js
+ * Connects to: backend/routes/ocrRoutes.js (Node.js) or app/api/receipt.py (FastAPI)
  */
 
-const API_BASE_URL = '/api';
+// FastAPIサーバー（ポート8000）を使用する場合は以下を有効化
+const API_BASE_URL = 'http://localhost:8000/api';
+// Node.jsサーバー（ポート3000）を使用する場合は以下を使用
+// const API_BASE_URL = '/api';
 
 document.addEventListener('DOMContentLoaded', () => {
   const uploadForm = document.getElementById('uploadForm');

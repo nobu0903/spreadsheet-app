@@ -4,7 +4,7 @@ uvicorn[standard]==0.24.0
 python-multipart==0.0.6
 
 # Image processing
-opencv-python==4.8.1.78
+opencv-python>=4.9.0  # NumPy 2.x対応版
 Pillow>=10.0.0
 
 # OCR

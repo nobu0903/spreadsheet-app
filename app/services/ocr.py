@@ -16,8 +16,10 @@ logger = logging.getLogger(__name__)
 
 # Tesseract OCRのパス設定（Windows環境でPATHに追加されていない場合）
 # 環境変数TESSERACT_CMDが設定されている場合はそれを使用
+tesseract_path = None
 if os.getenv('TESSERACT_CMD'):
-    pytesseract.pytesseract.tesseract_cmd = os.getenv('TESSERACT_CMD')
+    tesseract_path = os.getenv('TESSERACT_CMD')
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
 elif os.name == 'nt':  # Windows
     # デフォルトのインストールパスを試す
     default_paths = [
@@ -26,9 +28,23 @@ elif os.name == 'nt':  # Windows
     ]
     for path in default_paths:
         if os.path.exists(path):
+            tesseract_path = path
             pytesseract.pytesseract.tesseract_cmd = path
             logger.info(f'Tesseract OCRのパスを設定しました: {path}')
             break
+
+# TESSDATA_PREFIXの設定（日本語データファイルの場所を指定）
+if not os.getenv('TESSDATA_PREFIX') and tesseract_path:
+    # Tesseractのインストールパスからtessdataフォルダのパスを推測
+    tessdata_dir = os.path.join(os.path.dirname(tesseract_path), 'tessdata')
+    if os.path.exists(tessdata_dir):
+        os.environ['TESSDATA_PREFIX'] = tessdata_dir
+        logger.info(f'TESSDATA_PREFIXを設定しました: {tessdata_dir}')
+    else:
+        logger.warning(f'tessdataフォルダが見つかりません: {tessdata_dir}')
+else:
+    if tesseract_path:
+        logger.info(f'TESSDATA_PREFIXは既に設定されています: {os.getenv("TESSDATA_PREFIX")}')
 
 
 def extract_text(image_bytes: bytes) -> Dict[str, any]:
