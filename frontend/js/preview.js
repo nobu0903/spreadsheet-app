@@ -68,11 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storeNameInput) storeNameInput.value = receiptData.storeName;
       }
 
-      if (receiptData.payer) {
-        const payerInput = document.getElementById('payer');
-        if (payerInput) payerInput.value = receiptData.payer;
-      }
-
       if (receiptData.amountExclTax !== null && receiptData.amountExclTax !== undefined) {
         const amountExclTaxInput = document.getElementById('amountExclTax');
         if (amountExclTaxInput) amountExclTaxInput.value = receiptData.amountExclTax;
@@ -81,36 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (receiptData.amountInclTax !== null && receiptData.amountInclTax !== undefined) {
         const amountInclTaxInput = document.getElementById('amountInclTax');
         if (amountInclTaxInput) amountInclTaxInput.value = receiptData.amountInclTax;
-      }
-
-      if (receiptData.tax !== null && receiptData.tax !== undefined) {
-        const taxInput = document.getElementById('tax');
-        if (taxInput) taxInput.value = receiptData.tax;
-      }
-
-      if (receiptData.paymentMethod) {
-        const paymentMethodSelect = document.getElementById('paymentMethod');
-        if (paymentMethodSelect) paymentMethodSelect.value = receiptData.paymentMethod;
-      }
-
-      if (receiptData.expenseCategory) {
-        const expenseCategoryInput = document.getElementById('expenseCategory');
-        if (expenseCategoryInput) expenseCategoryInput.value = receiptData.expenseCategory;
-      }
-
-      if (receiptData.projectName) {
-        const projectNameInput = document.getElementById('projectName');
-        if (projectNameInput) projectNameInput.value = receiptData.projectName;
-      }
-
-      if (receiptData.notes) {
-        const notesTextarea = document.getElementById('notes');
-        if (notesTextarea) notesTextarea.value = receiptData.notes;
-      }
-
-      if (receiptData.receiptImageUrl) {
-        const receiptImageUrlInput = document.getElementById('receiptImageUrl');
-        if (receiptImageUrlInput) receiptImageUrlInput.value = receiptData.receiptImageUrl;
       }
 
     } catch (error) {
@@ -135,15 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const formData = {
         date: document.getElementById('date')?.value,
         storeName: document.getElementById('storeName')?.value,
-        payer: document.getElementById('payer')?.value,
         amountExclTax: document.getElementById('amountExclTax')?.value ? parseFloat(document.getElementById('amountExclTax').value) : null,
-        amountInclTax: document.getElementById('amountInclTax')?.value ? parseFloat(document.getElementById('amountInclTax').value) : null,
-        tax: document.getElementById('tax')?.value ? parseFloat(document.getElementById('tax').value) : null,
-        paymentMethod: document.getElementById('paymentMethod')?.value,
-        expenseCategory: document.getElementById('expenseCategory')?.value || null,
-        projectName: document.getElementById('projectName')?.value || null,
-        notes: document.getElementById('notes')?.value || null,
-        receiptImageUrl: document.getElementById('receiptImageUrl')?.value || null
+        amountInclTax: document.getElementById('amountInclTax')?.value ? parseFloat(document.getElementById('amountInclTax').value) : null
       };
 
       // Add spreadsheetId if provided (empty string will be ignored by backend)

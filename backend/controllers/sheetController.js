@@ -61,8 +61,8 @@ async function writeToSheet(req, res) {
 
     const receiptData = req.body;
 
-    // Validate required fields
-    const requiredFields = ['date', 'storeName', 'payer', 'amountInclTax'];
+    // Validate required fields（日付・店舗名・金額税込の4項目に絞る）
+    const requiredFields = ['date', 'storeName', 'amountInclTax'];
     const missingFields = requiredFields.filter(field => !receiptData[field]);
 
     if (missingFields.length > 0) {
@@ -122,8 +122,8 @@ async function batchWrite(req, res) {
       });
     }
 
-    // Validate required fields for each receipt
-    const requiredFields = ['date', 'storeName', 'payer', 'amountInclTax'];
+    // Validate required fields for each receipt（日付・店舗名・金額税込）
+    const requiredFields = ['date', 'storeName', 'amountInclTax'];
     const invalidReceipts = [];
     
     receipts.forEach((receipt, index) => {

@@ -174,24 +174,17 @@ async function ensureSheetExists(sheetName, spreadsheetId = null) {
           }
         });
 
-        // Add header row
+        // Add header row（日付・店舗名・金額税抜・金額税込の4列のみ）
         const headers = [
           'Date',
           'Store name',
-          'Payer',
           'Amount (tax excluded)',
-          'Amount (tax included)',
-          'Tax',
-          'Payment method',
-          'Expense category',
-          'Project / client name',
-          'Notes',
-          'Receipt image URL'
+          'Amount (tax included)'
         ];
 
         await sheets.spreadsheets.values.update({
           spreadsheetId: targetSpreadsheetId,
-          range: `${sheetName}!A1:K1`,
+          range: `${sheetName}!A1:D1`,
           valueInputOption: 'RAW',
           resource: {
             values: [headers]
@@ -228,7 +221,6 @@ async function batchWriteToSheet(sheetName, receipts, spreadsheetId = null) {
   const rows = receipts.map((receiptData) => [
     receiptData.date || '',
     receiptData.storeName || '',
-    receiptData.payer || '',
     receiptData.amountExclTax !== null &&
     receiptData.amountExclTax !== undefined
       ? receiptData.amountExclTax
@@ -236,21 +228,13 @@ async function batchWriteToSheet(sheetName, receipts, spreadsheetId = null) {
     receiptData.amountInclTax !== null &&
     receiptData.amountInclTax !== undefined
       ? receiptData.amountInclTax
-      : '',
-    receiptData.tax !== null && receiptData.tax !== undefined
-      ? receiptData.tax
-      : '',
-    receiptData.paymentMethod || '',
-    receiptData.expenseCategory || '',
-    receiptData.projectName || '',
-    receiptData.notes || '',
-    receiptData.receiptImageUrl || ''
+      : ''
   ]);
 
   const response = await retryWithBackoff(async () => {
     return sheets.spreadsheets.values.append({
       spreadsheetId: targetSpreadsheetId,
-      range: `${sheetName}!A:K`,
+      range: `${sheetName}!A:D`,
       valueInputOption: 'RAW',
       insertDataOption: 'INSERT_ROWS',
       resource: {
@@ -343,27 +327,20 @@ async function getHistory(options = {}) {
       // Read data from sheet (skip header row)
       const response = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: `${sheetName}!A2:K1000` // Read up to 1000 rows
+        range: `${sheetName}!A2:D1000` // 4列のみ（日付・店舗名・金額税抜・金額税込）
       });
 
       const rows = response.data.values || [];
       
-      // Convert rows to receipt objects
+      // Convert rows to receipt objects（4項目のみ）
       const receipts = rows
         .slice(0, limit)
         .map((row, index) => {
           return {
             date: row[0] || '',
             storeName: row[1] || '',
-            payer: row[2] || '',
-            amountExclTax: row[3] ? parseFloat(row[3]) : null,
-            amountInclTax: row[4] ? parseFloat(row[4]) : null,
-            tax: row[5] ? parseFloat(row[5]) : null,
-            paymentMethod: row[6] || '',
-            expenseCategory: row[7] || '',
-            projectName: row[8] || '',
-            notes: row[9] || '',
-            receiptImageUrl: row[10] || ''
+            amountExclTax: row[2] ? parseFloat(row[2]) : null,
+            amountInclTax: row[3] ? parseFloat(row[3]) : null
           };
         })
         .filter(receipt => receipt.date); // Filter out empty rows
