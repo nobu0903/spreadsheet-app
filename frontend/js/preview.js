@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Show success message and redirect
       alert('Google Sheetsに正常に保存されました！');
-      window.location.href = 'history.html';
+      window.location.href = 'upload.html';
       
     } catch (error) {
       console.error('Submit error:', error);

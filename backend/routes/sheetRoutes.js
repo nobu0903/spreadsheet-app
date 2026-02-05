@@ -14,9 +14,6 @@ router.post('/write', sheetController.writeToSheet);
 // POST /api/sheets/batch-write - Batch write receipt data to Google Sheets
 router.post('/batch-write', sheetController.batchWrite);
 
-// GET /api/sheets/history - Get receipt history
-router.get('/history', sheetController.getHistory);
-
 module.exports = router;
 
 

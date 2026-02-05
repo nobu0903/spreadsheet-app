@@ -110,34 +110,7 @@ OCRテキストを構造化データに変換
 
 ---
 
-### 4. 履歴取得
-
-#### GET /sheets/history
-
-処理済みレシートの履歴を取得
-
-**クエリパラメータ**
-- `month` (optional): 月を指定（例: "2025-01"）
-- `limit` (optional): 取得件数（デフォルト: 50）
-
-**レスポンス**
-```json
-{
-  "receipts": [
-    {
-      "date": "2025-01-15",
-      "storeName": "店舗名",
-      "amountInclTax": 1100,
-      "receiptImageUrl": "https://example.com/image.jpg"
-    }
-  ],
-  "total": 10
-}
-```
-
----
-
-### 5. ヘルスチェック
+### 4. ヘルスチェック
 
 #### GET /health
 

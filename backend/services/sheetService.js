@@ -300,71 +300,8 @@ async function writeReceipt(receiptData, spreadsheetId = null) {
   }
 }
 
-/**
- * Get receipt history from Google Sheets
- * @param {Object} options - Query options (month, limit, etc.)
- * @returns {Promise<Array>} List of receipt records
- */
-async function getHistory(options = {}) {
-  try {
-    if (!SPREADSHEET_ID) {
-      throw new Error('GOOGLE_SHEETS_ID environment variable is not set');
-    }
-
-    const sheets = await getSheetsClient();
-    const limit = options.limit || 50;
-    
-    let sheetName;
-    if (options.month) {
-      // Format: "2025-01" -> "2025_01"
-      sheetName = options.month.replace('-', '_');
-    } else {
-      // Use current month
-      sheetName = getSheetNameFromDate();
-    }
-
-    try {
-      // Read data from sheet (skip header row)
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${sheetName}!A2:D1000` // 4列のみ（日付・店舗名・金額税抜・金額税込）
-      });
-
-      const rows = response.data.values || [];
-      
-      // Convert rows to receipt objects（4項目のみ）
-      const receipts = rows
-        .slice(0, limit)
-        .map((row, index) => {
-          return {
-            date: row[0] || '',
-            storeName: row[1] || '',
-            amountExclTax: row[2] ? parseFloat(row[2]) : null,
-            amountInclTax: row[3] ? parseFloat(row[3]) : null
-          };
-        })
-        .filter(receipt => receipt.date); // Filter out empty rows
-
-      logger.info(`Retrieved ${receipts.length} receipts from sheet ${sheetName}`);
-
-      return receipts;
-    } catch (error) {
-      if (error.message && error.message.includes('Unable to parse range')) {
-        // Sheet doesn't exist or is empty
-        logger.info(`Sheet ${sheetName} not found or empty`);
-        return [];
-      }
-      throw error;
-    }
-  } catch (error) {
-    logger.error('Error retrieving history from Google Sheets:', error);
-    throw new Error(`Failed to retrieve history: ${error.message}`);
-  }
-}
-
 module.exports = {
   writeReceipt,
-  getHistory,
   batchWriteToSheet,
   getSheetNameFromDate,
   ensureSheetExists

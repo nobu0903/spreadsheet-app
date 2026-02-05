@@ -62,20 +62,6 @@ sheetService.writeReceipt() (Google Sheets API)
 完了通知
 ```
 
-### 5. 履歴表示
-
-```
-ユーザー
-  ↓
-history.html (フロントエンド)
-  ↓
-GET /api/sheets/history (バックエンド)
-  ↓
-sheetService.getHistory() (Google Sheets API)
-  ↓
-履歴データ表示
-```
-
 ## データ構造
 
 ### Google Sheets列構成

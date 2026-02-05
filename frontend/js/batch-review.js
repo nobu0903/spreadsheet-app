@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Show success message and redirect
       alert(`${result.successCount}件のレシートをGoogle Sheetsに正常に保存しました！`);
-      window.location.href = 'history.html';
+      window.location.href = 'upload.html';
       
     } catch (error) {
       console.error('Save all error:', error);

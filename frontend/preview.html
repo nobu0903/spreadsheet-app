@@ -8,13 +8,26 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>データ確認・編集</h1>
-      <nav>
-        <a href="upload.html">アップロード</a> |
-        <a href="history.html">履歴</a>
+    <header class="header">
+      <a href="upload.html" class="header__logo">Receipt Scanner</a>
+
+      <nav class="header__nav">
+        <ul>
+          <li>
+            <a href="upload.html">UPLOAD</a>
+          </li>
+          <li>
+            <a href="preview.html" class="active">PREVIEW</a>
+          </li>
+          <li>
+            <a href="batch-review.html">BATCH</a>
+          </li>
+          <li>
+            <a href="how-to-use.html">HOW TO USE</a>
+          </li>
+        </ul>
       </nav>
-    </div>
+    </header>
 
     <div class="card">
       <form id="editForm">
@@ -55,6 +68,25 @@
     </div>
   </div>
 
+  <footer>
+    <ul class="social_icon">
+      <li><a href="#"><ion-icon name="logo-facebook"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-twitter"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-instagram"></ion-icon></a></li>
+    </ul>
+
+    <ul class="menu">
+      <li><a href="upload.html">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <p class="copyright">2026 Receipt Scanner</p>
+    <p class="copyright">Made for portfolio use.</p>
+  </footer>
+
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
   <script src="js/preview.js"></script>
 </body>
 </html>

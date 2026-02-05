@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>使い方 - Receipt Scanner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <a href="upload.html" class="header__logo">Receipt Scanner</a>
+
+      <nav class="header__nav">
+        <ul>
+          <li>
+            <a href="upload.html">UPLOAD</a>
+          </li>
+          <li>
+            <a href="preview.html">PREVIEW</a>
+          </li>
+          <li>
+            <a href="batch-review.html">BATCH</a>
+          </li>
+          <li>
+            <a href="how-to-use.html" class="active">HOW TO USE</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="card">
+      <h1 style="margin-bottom: 16px;">使い方</h1>
+      <p style="margin-bottom: 24px; color: #4b5563;">
+        Receipt Scanner は、レシート画像から
+        <strong>日付・店舗名・金額（税込）</strong>
+        を自動で読み取り、Google Sheets に保存するためのシンプルなツールです。
+      </p>
+
+      <h2 style="font-size: 18px; margin-bottom: 12px;">1. アップロード（UPLOAD）</h2>
+      <ul style="margin-left: 20px; margin-bottom: 20px; color: #4b5563;">
+        <li>画面上部のナビから <strong>UPLOAD</strong> を選びます。</li>
+        <li>「レシート画像を選択」ボタンから、jpg / png 形式のレシート画像を選択します。</li>
+        <li>複数枚まとめて処理したい場合は、「複数枚一括処理」を選択してアップロードします。</li>
+      </ul>
+
+      <h2 style="font-size: 18px; margin-bottom: 12px;">2. OCR と自動抽出</h2>
+      <ul style="margin-left: 20px; margin-bottom: 20px; color: #4b5563;">
+        <li>アップロード後、自動的に OCR（文字認識）が実行されます。</li>
+        <li>認識されたテキストから、ルール＋機械学習で
+          <strong>日付・店舗名・金額（税込）</strong> の候補が抽出されます。</li>
+      </ul>
+
+      <h2 style="font-size: 18px; margin-bottom: 12px;">3. 内容の確認・修正（PREVIEW）</h2>
+      <ul style="margin-left: 20px; margin-bottom: 20px; color: #4b5563;">
+        <li>ナビから <strong>PREVIEW</strong> を選ぶと、1枚分の認識結果を確認できます。</li>
+        <li>フォーム上で <strong>日付・店舗名・金額（税込）</strong> を必要に応じて修正してください。</li>
+        <li>問題なければ「Google Sheetsに保存」を押すと、スプレッドシートへ書き込まれます。</li>
+      </ul>
+
+      <h2 style="font-size: 18px; margin-bottom: 12px;">4. 複数枚の一括確認（BATCH）</h2>
+      <ul style="margin-left: 20px; margin-bottom: 20px; color: #4b5563;">
+        <li>複数枚をまとめて処理した場合は、ナビから <strong>BATCH</strong> を選びます。</li>
+        <li>一覧画面で、それぞれの <strong>日付・店舗名・金額（税込）</strong> を編集できます。</li>
+        <li>「すべて保存」を押すと、一覧に表示されている内容がまとめて Google Sheets に保存されます。</li>
+      </ul>
+
+      <h2 style="font-size: 18px; margin-bottom: 12px;">5. モデル強化（任意）</h2>
+      <p style="margin-left: 20px; margin-bottom: 20px; color: #4b5563;">
+        PREVIEW 画面では、「モデル強化（JSON保存）」ボタンから、
+        <strong>OCRテキストとあなたが修正した正解データ</strong> を JSON として保存できます。<br>
+        このデータをもとに、将来的に「どの行が店名か・合計か」を推定する行分類モデルを学習する設計になっています。
+      </p>
+
+      <h2 style="font-size: 18px; margin-bottom: 12px;">撮影とアップロードのコツ</h2>
+      <ul style="margin-left: 20px; margin-bottom: 8px; color: #4b5563;">
+        <li>レシート全体が入るように、真正面から撮影してください。</li>
+        <li>ピントが合う距離で、できるだけ明るい場所で撮ると認識精度が上がります。</li>
+        <li>対応形式は <strong>JPEG / PNG</strong> です。</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>
+    <ul class="social_icon">
+      <li><a href="#"><ion-icon name="logo-facebook"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-twitter"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-instagram"></ion-icon></a></li>
+    </ul>
+
+    <ul class="menu">
+      <li><a href="upload.html">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <p class="copyright">2026 Receipt Scanner</p>
+    <p class="copyright">Made for portfolio use.</p>
+  </footer>
+
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
+

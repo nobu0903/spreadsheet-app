@@ -23,13 +23,8 @@ async function processWithConcurrencyLimit(items, concurrencyLimit, processor) {
 
     if (executing.length >= concurrencyLimit) {
       await Promise.race(executing);
-      // remove settled promises
-      for (let i = executing.length - 1; i >= 0; i--) {
-        if (executing[i].settled) continue;
-      }
     }
 
-    // attach settled flag
     p.finally(() => {
       const idx = executing.indexOf(p);
       if (idx !== -1) {
@@ -61,7 +56,7 @@ async function writeToSheet(req, res) {
 
     const receiptData = req.body;
 
-    // Validate required fields（日付・店舗名・金額税込の4項目に絞る）
+    // Validate required fields（日付・店舗名・金額税込の3項目）
     const requiredFields = ['date', 'storeName', 'amountInclTax'];
     const missingFields = requiredFields.filter(field => !receiptData[field]);
 
@@ -146,7 +141,7 @@ async function batchWrite(req, res) {
       });
     }
 
-    // Group receipts by target sheet (month)
+    // Group receipts by target sheet (月ごと)
     const { getSheetNameFromDate } = sheetService;
     const receiptsBySheet = {};
     receipts.forEach((receipt, index) => {
@@ -223,43 +218,9 @@ async function batchWrite(req, res) {
   }
 }
 
-/**
- * Get receipt history from Google Sheets
- * GET /api/sheets/history
- */
-async function getHistory(req, res) {
-  try {
-    logger.info('History retrieval request received');
-
-    // Extract query parameters
-    const options = {
-      month: req.query.month || null,
-      limit: req.query.limit ? parseInt(req.query.limit) : 50
-    };
-
-    // Validate limit
-    if (isNaN(options.limit) || options.limit < 1 || options.limit > 1000) {
-      options.limit = 50;
-    }
-
-    // Call sheet service to get history
-    const receipts = await sheetService.getHistory(options);
-
-    logger.info(`Retrieved ${receipts.length} receipts from history`);
-
-    res.status(200).json({
-      receipts: receipts,
-      total: receipts.length
-    });
-  } catch (error) {
-    logger.error('Error retrieving history:', error);
-    errorHandler.handleError(error, req, res);
-  }
-}
-
 module.exports = {
   writeToSheet,
-  batchWrite,
-  getHistory
+  batchWrite
 };
+
 

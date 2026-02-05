@@ -25,10 +25,10 @@ project-root/
 │   ├── js/
 │   │   ├── upload.js
 │   │   ├── preview.js
-│   │   └── history.js
 │   ├── upload.html
 │   ├── preview.html
-│   └── history.html
+│   │   └── (removed) history.js
+│   └── (removed) history.html
 ├── backend/
 │   ├── controllers/
 │   │   ├── ocrController.js
