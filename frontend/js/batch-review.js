@@ -62,10 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <input type="text" class="receipt-storeName" value="${receiptData.storeName || ''}" data-index="${index}">
           </div>
           <div>
-            <label>金額（税抜）</label>
-            <input type="number" class="receipt-amountExclTax" value="${receiptData.amountExclTax ?? ''}" step="0.01" data-index="${index}">
-          </div>
-          <div>
             <label>金額（税込）</label>
             <input type="number" class="receipt-amountInclTax" value="${receiptData.amountInclTax ?? ''}" step="0.01" data-index="${index}">
           </div>
@@ -92,15 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Update receipt data when input changes（日付・店舗名・金額税抜・金額税込のみ）
+  // Update receipt data when input changes（日付・店舗名・金額税込のみ）
   receiptsList?.addEventListener('input', (e) => {
     if (e.target.classList.contains('receipt-date') ||
         e.target.classList.contains('receipt-storeName') ||
-        e.target.classList.contains('receipt-amountExclTax') ||
         e.target.classList.contains('receipt-amountInclTax')) {
       const index = parseInt(e.target.dataset.index);
       const fieldName = e.target.className.replace('receipt-', '');
-      if (fieldName === 'amountInclTax' || fieldName === 'amountExclTax') {
+      if (fieldName === 'amountInclTax') {
         receiptsData[index].data[fieldName] = e.target.value ? parseFloat(e.target.value) : null;
       } else {
         receiptsData[index].data[fieldName] = e.target.value || null;
@@ -136,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
           receipts: receiptsData.map(r => ({
             date: r.data.date,
             storeName: r.data.storeName,
-            amountExclTax: r.data.amountExclTax ?? null,
             amountInclTax: r.data.amountInclTax ?? null
           })),
           spreadsheetId: spreadsheetId

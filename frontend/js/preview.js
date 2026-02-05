@@ -68,11 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (storeNameInput) storeNameInput.value = receiptData.storeName;
       }
 
-      if (receiptData.amountExclTax !== null && receiptData.amountExclTax !== undefined) {
-        const amountExclTaxInput = document.getElementById('amountExclTax');
-        if (amountExclTaxInput) amountExclTaxInput.value = receiptData.amountExclTax;
-      }
-
       if (receiptData.amountInclTax !== null && receiptData.amountInclTax !== undefined) {
         const amountInclTaxInput = document.getElementById('amountInclTax');
         if (amountInclTaxInput) amountInclTaxInput.value = receiptData.amountInclTax;
@@ -100,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const formData = {
         date: document.getElementById('date')?.value,
         storeName: document.getElementById('storeName')?.value,
-        amountExclTax: document.getElementById('amountExclTax')?.value ? parseFloat(document.getElementById('amountExclTax').value) : null,
         amountInclTax: document.getElementById('amountInclTax')?.value ? parseFloat(document.getElementById('amountInclTax').value) : null
       };
 
