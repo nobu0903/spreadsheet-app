@@ -240,8 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const formData = new FormData();
     formData.append('image', file);
 
+    const headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
     const response = await fetch(`${API_BASE_URL}/ocr/process`, {
       method: 'POST',
+      headers,
       body: formData
     });
 
@@ -259,11 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
    * @returns {Promise<Object>} Structured receipt data
    */
   async function structureOCRText(ocrText) {
+    const headers = window.getAuthHeaders ? window.getAuthHeaders({ 'Content-Type': 'application/json' }) : { 'Content-Type': 'application/json' };
     const response = await fetch(`${API_BASE_URL}/ai/structure`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({ ocrText })
     });
 

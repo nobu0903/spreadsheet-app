@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン - Receipt Scanner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <a href="login.html" class="header__logo">Receipt Scanner</a>
+      <nav class="header__nav">
+        <ul>
+          <li><span style="color: #6b7280; font-size: 14px;">ログインしてください</span></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="card" style="max-width: 400px; margin: 60px auto;">
+      <h1 style="margin-bottom: 24px; text-align: center;">ログイン</h1>
+      <div id="errorMessage" style="display: none; background-color: #fee; color: #c33; padding: 10px; border-radius: 4px; margin-bottom: 16px;"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">ユーザー名</label>
+          <input type="text" id="username" name="username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">パスワード</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">ログイン</button>
+      </form>
+
+      <p style="margin-top: 20px; text-align: center; font-size: 14px; color: #6b7280;">
+        アカウントをお持ちでない方は
+        <a href="register.html">新規登録</a>
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    <ul class="social_icon">
+      <li><a href="#"><ion-icon name="logo-facebook"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-twitter"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-instagram"></ion-icon></a></li>
+    </ul>
+    <ul class="menu">
+      <li><a href="login.html">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <p class="copyright">2026 Receipt Scanner</p>
+    <p class="copyright">Made for portfolio use.</p>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

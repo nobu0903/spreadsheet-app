@@ -122,11 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
+      const headers = window.getAuthHeaders ? window.getAuthHeaders({ 'Content-Type': 'application/json' }) : { 'Content-Type': 'application/json' };
       const response = await fetch(`${API_BASE_URL}/sheets/batch-write`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify({
           receipts: receiptsData.map(r => ({
             date: r.data.date,

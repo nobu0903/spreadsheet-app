@@ -16,7 +16,19 @@ NODE_ENV=development
 - **PORT**: サーバーが起動するポート番号（デフォルト: 3000）
 - **NODE_ENV**: 実行環境（`development` または `production`）
 
-### 2. Google Cloud設定
+### 2. 認証設定（ログイン機能）
+
+```env
+MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/receipt-app
+JWT_SECRET=your-secure-random-secret-string
+```
+
+- **MONGODB_URI**: MongoDB Atlas の接続URI
+  - 取得方法: [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) でクラスターを作成 → Connect → Driver を選択 → 接続文字列をコピー
+  - 例: `mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/receipt-app?retryWrites=true&w=majority`
+- **JWT_SECRET**: JWT署名用の秘密鍵（本番では32文字以上のランダム文字列を推奨）
+
+### 3. Google Cloud設定
 
 ```env
 GOOGLE_PROJECT_ID=your-project-id
@@ -27,7 +39,7 @@ GOOGLE_CREDENTIALS_PATH=backend/config/credentials.json
   - 取得方法: [Google Cloud Console](https://console.cloud.google.com/) → プロジェクト選択 → プロジェクトIDをコピー
 - **GOOGLE_CREDENTIALS_PATH**: 認証情報JSONファイルのパス（通常は`backend/config/credentials.json`のまま）
 
-### 3. Google Sheets設定
+### 4. Google Sheets設定
 
 ```env
 GOOGLE_SHEETS_ID=your-spreadsheet-id
@@ -38,7 +50,7 @@ GOOGLE_SHEETS_ID=your-spreadsheet-id
   - 例: `https://docs.google.com/spreadsheets/d/【この部分がID】/edit`
   - 例: `1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms`
 
-### 4. AI設定（どちらか一方を選択）
+### 5. AI設定（どちらか一方を選択）
 
 #### オプションA: Google Vertex AIを使用する場合（推奨）
 
@@ -79,6 +91,10 @@ OPENAI_MODEL=gpt-4
 # Server Configuration
 PORT=3000
 NODE_ENV=development
+
+# Authentication (MongoDB + JWT)
+MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/receipt-app
+JWT_SECRET=your-secure-random-secret-string
 
 # Google Cloud Configuration
 GOOGLE_PROJECT_ID=my-receipt-app-123456

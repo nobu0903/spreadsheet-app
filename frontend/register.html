@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規登録 - Receipt Scanner</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <a href="login.html" class="header__logo">Receipt Scanner</a>
+      <nav class="header__nav">
+        <ul>
+          <li><span style="color: #6b7280; font-size: 14px;">新規登録</span></li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="card" style="max-width: 400px; margin: 60px auto;">
+      <h1 style="margin-bottom: 24px; text-align: center;">新規登録</h1>
+      <div id="errorMessage" style="display: none; background-color: #fee; color: #c33; padding: 10px; border-radius: 4px; margin-bottom: 16px;"></div>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="username">ユーザー名</label>
+          <input type="text" id="username" name="username" required minlength="2" maxlength="50" autocomplete="username">
+          <small style="display: block; margin-top: 4px; color: #6b7280; font-size: 12px;">2〜50文字</small>
+        </div>
+        <div class="form-group">
+          <label for="password">パスワード</label>
+          <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+          <small style="display: block; margin-top: 4px; color: #6b7280; font-size: 12px;">6文字以上</small>
+        </div>
+        <button type="submit" id="registerBtn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">登録</button>
+      </form>
+
+      <p style="margin-top: 20px; text-align: center; font-size: 14px; color: #6b7280;">
+        すでにアカウントをお持ちの方は
+        <a href="login.html">ログイン</a>
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    <ul class="social_icon">
+      <li><a href="#"><ion-icon name="logo-facebook"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-twitter"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-linkedin"></ion-icon></a></li>
+      <li><a href="#"><ion-icon name="logo-instagram"></ion-icon></a></li>
+    </ul>
+    <ul class="menu">
+      <li><a href="login.html">Home</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <p class="copyright">2026 Receipt Scanner</p>
+    <p class="copyright">Made for portfolio use.</p>
+  </footer>
+
+  <script src="js/auth.js"></script>
+  <script src="js/register.js"></script>
+</body>
+</html>
