@@ -93,15 +93,46 @@ document.addEventListener('DOMContentLoaded', function () {
   if (logoutBtn) logoutBtn.addEventListener('click', function () { window.logout(); });
 
   // Load real receipt history from MongoDB
+  var currentHistoryFilter = null; // null = 全員、string = 特定ユーザー名
+
   loadHistory();
 
-  function loadHistory() {
+  // 「全員表示」ボタン
+  var filterClearBtn = document.getElementById('historyFilterClearBtn');
+  if (filterClearBtn) {
+    filterClearBtn.addEventListener('click', function () {
+      currentHistoryFilter = null;
+      loadHistory();
+    });
+  }
+
+  function loadHistory(username) {
+    if (username !== undefined) currentHistoryFilter = username || null;
     var tbody = document.getElementById('historyTableBody');
     if (!tbody) return;
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">読み込み中...</td></tr>';
 
+    // フィルタバッジを更新
+    var badge = document.getElementById('historyFilterBadge');
+    var clearBtn = document.getElementById('historyFilterClearBtn');
+    if (badge && clearBtn) {
+      if (currentHistoryFilter) {
+        badge.textContent = currentHistoryFilter + ' の履歴';
+        badge.style.display = 'inline-block';
+        clearBtn.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+        clearBtn.style.display = 'none';
+      }
+    }
+
+    var url = API_BASE + '/admin/receipts?limit=100';
+    if (currentHistoryFilter) {
+      url += '&username=' + encodeURIComponent(currentHistoryFilter);
+    }
+
     var headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
-    fetch(API_BASE + '/admin/receipts?limit=100', { headers: headers })
+    fetch(url, { headers: headers })
       .then(function (res) {
         if (!res.ok) throw new Error('履歴の取得に失敗しました');
         return res.json();
@@ -109,7 +140,10 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function (data) {
         var receipts = data.receipts || [];
         if (receipts.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">まだ保存されたレシートがありません</td></tr>';
+          var msg = currentHistoryFilter
+            ? currentHistoryFilter + ' の履歴はまだありません'
+            : 'まだ保存されたレシートがありません';
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">' + msg + '</td></tr>';
           return;
         }
         tbody.innerHTML = receipts.map(function (r) {
@@ -117,12 +151,21 @@ document.addEventListener('DOMContentLoaded', function () {
           var amount = r.amountInclTax != null ? r.amountInclTax.toLocaleString() + ' 円' : '-';
           return '<tr>' +
             '<td>' + dt + '</td>' +
-            '<td>' + (r.username || '-') + '</td>' +
+            '<td><a href="#" class="history-user-link" style="color:#4285f4; text-decoration:underline; cursor:pointer;" data-username="' + (r.username || '') + '">' + (r.username || '-') + '</a></td>' +
             '<td>' + (r.storeName || '-') + '</td>' +
             '<td>' + amount + '</td>' +
             '<td><button type="button" class="btn btn-secondary btn-small" disabled>写真ダウンロード（仮）</button></td>' +
             '</tr>';
         }).join('');
+
+        // 履歴画面のユーザー名リンク（履歴→ユーザーフィルタ）
+        tbody.querySelectorAll('.history-user-link').forEach(function (link) {
+          link.addEventListener('click', function (e) {
+            e.preventDefault();
+            var uname = this.getAttribute('data-username');
+            if (uname) loadHistory(uname);
+          });
+        });
       })
       .catch(function (err) {
         tbody.innerHTML = '<tr><td colspan="5" style="color:#c33;">' + (err.message || '履歴の取得に失敗しました') + '</td></tr>';
@@ -179,14 +222,29 @@ document.addEventListener('DOMContentLoaded', function () {
       var state = u.disabled ? '<span class="admin-badge admin-badge--disabled">無効</span>' : '<span style="color:#059669;">有効</span>';
       var createdAt = u.createdAt ? new Date(u.createdAt).toLocaleDateString('ja-JP') : '-';
 
+      var usernameCell = '<a href="#" class="user-history-link" style="color:#4285f4; text-decoration:underline; cursor:pointer;" data-username="' + (u.username || '') + '">' + (u.username || '-') + '</a>';
       return '<tr>' +
-        '<td>' + (u.username || '-') + '</td>' +
+        '<td>' + usernameCell + '</td>' +
         '<td>' + roleSelect + '</td>' +
         '<td>' + createdAt + '</td>' +
         '<td>' + state + '</td>' +
         '<td class="admin-btn-group">' + (isSelf ? '-' : disabledBtn + deleteBtn) + '</td>' +
         '</tr>';
     }).join('');
+
+    // ユーザー名クリック → 履歴パネルへ移動してフィルタ
+    tbody.querySelectorAll('.user-history-link').forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        var uname = this.getAttribute('data-username');
+        // 履歴パネルに切り替え
+        document.querySelectorAll('.admin-sidebar__link').forEach(function (l) { l.classList.remove('active'); });
+        document.querySelector('.admin-sidebar__link[data-panel="history"]').classList.add('active');
+        document.getElementById('panelHistory').style.display = 'block';
+        document.getElementById('panelUsers').style.display = 'none';
+        loadHistory(uname);
+      });
+    });
 
     tbody.querySelectorAll('.user-role-select').forEach(function (sel) {
       sel.addEventListener('change', function () {

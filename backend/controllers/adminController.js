@@ -139,21 +139,27 @@ async function deleteUser(req, res) {
 }
 
 /**
- * GET /api/admin/receipts - List all receipt records (admin only)
+ * GET /api/admin/receipts - List receipt records (admin only)
+ * Query params: username (optional filter), page, limit
  */
 async function listReceipts(req, res) {
   try {
     const page = parseInt(req.query.page || '1', 10);
-    const limit = parseInt(req.query.limit || '50', 10);
+    const limit = parseInt(req.query.limit || '100', 10);
     const skip = (page - 1) * limit;
 
+    const filter = {};
+    if (req.query.username) {
+      filter.username = req.query.username;
+    }
+
     const [receipts, total] = await Promise.all([
-      Receipt.find({})
+      Receipt.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Receipt.countDocuments({})
+      Receipt.countDocuments(filter)
     ]);
 
     res.json({ receipts, total, page, limit });

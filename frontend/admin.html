@@ -32,7 +32,11 @@
 
     <main class="admin-main">
       <div id="panelHistory" class="admin-panel">
-        <h1 class="admin-panel__title">レシート処理履歴</h1>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+          <h1 class="admin-panel__title" style="margin-bottom: 0;">レシート処理履歴</h1>
+          <span id="historyFilterBadge" style="display:none; background:#4285f4; color:#fff; border-radius:20px; padding:3px 12px; font-size:13px; font-weight:600;"></span>
+          <button type="button" id="historyFilterClearBtn" class="btn btn-secondary btn-small" style="display:none;">全員を表示</button>
+        </div>
         <div class="admin-card card">
           <div class="admin-table-wrap">
             <table class="admin-table">
