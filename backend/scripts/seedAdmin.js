@@ -1,6 +1,6 @@
 /**
  * seedAdmin.js
- * Ensures default admin user exists (username: admin, password: admin)
+ * Ensures default admin user exists (username: admin, password: admin123)
  */
 
 const User = require('../models/User');
@@ -15,10 +15,10 @@ async function ensureAdminUser() {
     }
     await User.create({
       username: 'admin',
-      password: 'admin',
+      password: 'admin123',
       role: 'admin'
     });
-    logger.info('Default admin user created (username: admin, password: admin)');
+    logger.info('Default admin user created (username: admin, password: admin123)');
   } catch (err) {
     logger.error('Seed admin error:', err.message);
   }

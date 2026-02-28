@@ -7,6 +7,7 @@
 const sheetService = require('../services/sheetService');
 const errorHandler = require('../utils/errorHandler');
 const logger = require('../utils/logger');
+const Receipt = require('../models/Receipt');
 
 /**
  * Utility: process items with a concurrency limit
@@ -79,6 +80,24 @@ async function writeToSheet(req, res) {
     const result = await sheetService.writeReceipt(receiptDataWithoutId, spreadsheetId);
 
     logger.info(`Receipt written successfully to sheet ${result.sheetName}, row ${result.rowNumber}`);
+
+    // Save to MongoDB if connected
+    if (req.user) {
+      try {
+        await Receipt.create({
+          userId: req.user.userId,
+          username: req.user.username,
+          date: receiptDataWithoutId.date,
+          storeName: receiptDataWithoutId.storeName,
+          amountInclTax: receiptDataWithoutId.amountInclTax,
+          sheetName: result.sheetName,
+          rowNumber: result.rowNumber
+        });
+        logger.info('Receipt saved to MongoDB');
+      } catch (dbErr) {
+        logger.warn('Failed to save receipt to MongoDB:', dbErr.message);
+      }
+    }
 
     res.status(200).json(result);
   } catch (error) {
@@ -204,6 +223,29 @@ async function batchWrite(req, res) {
     });
 
     logger.info(`Batch write completed: ${successCount} successful, ${failureCount} failed`);
+
+    // Save successful receipts to MongoDB
+    if (req.user) {
+      const mongoSaves = results
+        .filter(r => r && r.success)
+        .map(r => ({
+          userId: req.user.userId,
+          username: req.user.username,
+          date: receipts[r.index].date,
+          storeName: receipts[r.index].storeName,
+          amountInclTax: receipts[r.index].amountInclTax,
+          sheetName: r.sheetName,
+          rowNumber: r.rowNumber
+        }));
+      if (mongoSaves.length > 0) {
+        try {
+          await Receipt.insertMany(mongoSaves);
+          logger.info(`Saved ${mongoSaves.length} receipts to MongoDB`);
+        } catch (dbErr) {
+          logger.warn('Failed to save batch receipts to MongoDB:', dbErr.message);
+        }
+      }
+    }
 
     res.status(200).json({
       success: true,

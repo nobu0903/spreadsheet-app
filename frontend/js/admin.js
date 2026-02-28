@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('panelHistory').style.display = panel === 'history' ? 'block' : 'none';
       document.getElementById('panelUsers').style.display = panel === 'users' ? 'block' : 'none';
       if (panel === 'users') loadUsers();
+      if (panel === 'history') loadHistory();
     });
   });
 
@@ -91,24 +92,41 @@ document.addEventListener('DOMContentLoaded', function () {
   var logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) logoutBtn.addEventListener('click', function () { window.logout(); });
 
-  // Mock history data
-  var mockHistory = [
-    { date: '2026-01-28 14:30', user: 'user1', store: 'サンプルスーパー', amount: '1,510' },
-    { date: '2026-01-27 10:15', user: 'admin', store: 'コンビニA', amount: '890' },
-    { date: '2026-01-26 18:00', user: 'user2', store: 'レストランB', amount: '2,200' }
-  ];
+  // Load real receipt history from MongoDB
+  loadHistory();
 
-  var tbody = document.getElementById('historyTableBody');
-  if (tbody) {
-    tbody.innerHTML = mockHistory.map(function (row) {
-      return '<tr>' +
-        '<td>' + row.date + '</td>' +
-        '<td>' + row.user + '</td>' +
-        '<td>' + row.store + '</td>' +
-        '<td>' + row.amount + ' 円</td>' +
-        '<td><button type="button" class="btn btn-secondary btn-small" disabled>写真ダウンロード（仮）</button></td>' +
-        '</tr>';
-    }).join('');
+  function loadHistory() {
+    var tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">読み込み中...</td></tr>';
+
+    var headers = window.getAuthHeaders ? window.getAuthHeaders() : {};
+    fetch(API_BASE + '/admin/receipts?limit=100', { headers: headers })
+      .then(function (res) {
+        if (!res.ok) throw new Error('履歴の取得に失敗しました');
+        return res.json();
+      })
+      .then(function (data) {
+        var receipts = data.receipts || [];
+        if (receipts.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#6b7280;">まだ保存されたレシートがありません</td></tr>';
+          return;
+        }
+        tbody.innerHTML = receipts.map(function (r) {
+          var dt = r.createdAt ? new Date(r.createdAt).toLocaleString('ja-JP') : '-';
+          var amount = r.amountInclTax != null ? r.amountInclTax.toLocaleString() + ' 円' : '-';
+          return '<tr>' +
+            '<td>' + dt + '</td>' +
+            '<td>' + (r.username || '-') + '</td>' +
+            '<td>' + (r.storeName || '-') + '</td>' +
+            '<td>' + amount + '</td>' +
+            '<td><button type="button" class="btn btn-secondary btn-small" disabled>写真ダウンロード（仮）</button></td>' +
+            '</tr>';
+        }).join('');
+      })
+      .catch(function (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="color:#c33;">' + (err.message || '履歴の取得に失敗しました') + '</td></tr>';
+      });
   }
 
   function loadUsers() {

@@ -4,6 +4,7 @@
  */
 
 const User = require('../models/User');
+const Receipt = require('../models/Receipt');
 const logger = require('../utils/logger');
 
 /**
@@ -137,4 +138,29 @@ async function deleteUser(req, res) {
   }
 }
 
-module.exports = { createUser, listUsers, updateUser, deleteUser };
+/**
+ * GET /api/admin/receipts - List all receipt records (admin only)
+ */
+async function listReceipts(req, res) {
+  try {
+    const page = parseInt(req.query.page || '1', 10);
+    const limit = parseInt(req.query.limit || '50', 10);
+    const skip = (page - 1) * limit;
+
+    const [receipts, total] = await Promise.all([
+      Receipt.find({})
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Receipt.countDocuments({})
+    ]);
+
+    res.json({ receipts, total, page, limit });
+  } catch (err) {
+    logger.error('Admin listReceipts error:', err);
+    res.status(500).json({ error: { message: '履歴の取得に失敗しました。' } });
+  }
+}
+
+module.exports = { createUser, listUsers, updateUser, deleteUser, listReceipts };
